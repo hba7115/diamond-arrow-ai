@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Arrow AI Tools - NWS Screwworm Tracker</title>
+    <style>
+        /* ============================================
+           DIAMOND-ARROW.AI - NWS SCREWWORM TRACKER
+           Version: 1.0.0
+           Created: January 31, 2026
+           ============================================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #1a365d 0%, #2c5282 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        .logo-container {
+            max-width: 300px;
+            margin: 0 auto 15px auto;
+        }
+        
+        .logo-container img {
+            width: 100%;
+            height: auto;
+        }
+        
+        .site-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .site-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* EMERGENCY ALERT BANNER */
+        .alert-banner {
+            background: linear-gradient(90deg, #c53030 0%, #9b2c2c 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        
+        .alert-banner h2 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .alert-banner p {
+            font-size: 0.95rem;
+        }
+        
+        /* MAIN CONTENT */
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* EMERGENCY CONTACT BOX */
+        .emergency-box {
+            background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .emergency-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .hotline {
+            background: white;
+            color: #c53030;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        
+        .hotline:hover {
+            transform: scale(1.05);
+        }
+        
+        .hotline-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 400;
+            margin-bottom: 5px;
+        }
+        
+        /* INFO SECTIONS */
+        .info-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .info-section h2 {
+            color: #1a365d;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2c5282;
+        }
+        
+        .info-section h3 {
+            color: #2c5282;
+            font-size: 1.1rem;
+            margin: 15px 0 10px 0;
+        }
+        
+        .info-section p {
+            margin-bottom: 12px;
+        }
+        
+        .info-section ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .info-section li {
+            margin-bottom: 8px;
+        }
+        
+        /* WARNING BOX */
+        .warning-box {
+            background: #fffbeb;
+            border-left: 4px solid #d69e2e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .warning-box strong {
+            color: #975a16;
+        }
+        
+        /* FLY IDENTIFICATION */
+        .fly-id-box {
+            background: #ebf8ff;
+            border: 2px solid #2c5282;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .fly-id-box h3 {
+            color: #1a365d;
+            margin-top: 0;
+        }
+        
+        /* RESOURCE LINKS */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .resource-link {
+            display: block;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            text-decoration: none;
+            color: #2c5282;
+            transition: all 0.2s;
+        }
+        
+        .resource-link:hover {
+            border-color: #2c5282;
+            background: #ebf8ff;
+            transform: translateY(-2px);
+        }
+        
+        .resource-link strong {
+            display: block;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+        }
+        
+        .resource-link span {
+            font-size: 0.85rem;
+            color: #718096;
+        }
+        
+        /* FOOTER */
+        footer {
+            background: #1a365d;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .dedication {
+            font-style: italic;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        .contact-info {
+            margin-bottom: 20px;
+        }
+        
+        .contact-info a {
+            color: #90cdf4;
+            text-decoration: none;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 600px) {
+            .site-title {
+                font-size: 1.4rem;
+            }
+            
+            .hotline {
+                display: block;
+                margin: 10px 0;
+            }
+            
+            .info-section {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="logo-container">
+            <!-- Logo placeholder - replace src with actual logo path when deployed -->
+            <img src="Arrow_Diamond_AI_Tools_BLUE_logo_C.png" alt="Arrow Diamond AI Tools Logo">
+        </div>
+        <h1 class="site-title">New World Screwworm Tracker</h1>
+        <p class="site-subtitle">Protecting Texas Livestock &amp; Wildlife</p>
+    </header>
+    
+    <!-- EMERGENCY ALERT -->
+    <div class="alert-banner">
+        <h2>⚠️ TEXAS DISASTER DECLARATION ISSUED</h2>
+        <p>Governor Abbott declared statewide disaster on January 29, 2026 due to NWS threat from Mexico</p>
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- EMERGENCY HOTLINES -->
+        <div class="emergency-box">
+            <h2>🚨 REPORT SUSPECTED SCREWWORM IMMEDIATELY</h2>
+            <p style="margin-bottom: 15px;">If you suspect NWS infestation, do NOT delay - report within 24 hours</p>
+            
+            <a href="tel:1-800-550-8242" class="hotline">
+                <span class="hotline-label">LIVESTOCK &amp; PETS</span>
+                1-800-550-8242
+            </a>
+            
+            <a href="https://tpwd.texas.gov/landwater/habitat-management/find-a-wildlife-biologist/" class="hotline" target="_blank">
+                <span class="hotline-label">WILDLIFE</span>
+                Find TPWD Biologist
+            </a>
+        </div>
+        
+        <!-- WHAT IS NWS -->
+        <section class="info-section">
+            <h2>What is New World Screwworm?</h2>
+            <p>New World Screwworm (NWS) flies lay eggs in open wounds or body openings of live, warm-blooded animals. The larvae (maggots) burrow into living flesh, causing serious injury and often death if untreated.</p>
+            
+            <div class="warning-box">
+                <strong>⚠️ Critical Threat:</strong> NWS can infest cattle, horses, sheep, goats, pigs, pets, wildlife, and in rare cases, humans. This is a threat to our ranching community, food supply, and national security.
+            </div>
+            
+            <h3>Current Situation</h3>
+            <p>NWS has spread northward through Central America and Mexico. Active cases are confirmed in Tamaulipas, Mexico - directly across the Texas border. The parasite was eradicated from the U.S. in 1966, but is now threatening to return.</p>
+            
+            <h3>Texas Response</h3>
+            <p>A joint Texas NWS Response Team has been established by the Texas Animal Health Commission (TAHC) and Texas Parks and Wildlife Department (TPWD). A $750 million Sterile Fly Production Facility is under construction in Edinburg, Texas.</p>
+        </section>
+        
+        <!-- IDENTIFICATION -->
+        <section class="info-section">
+            <h2>How to Identify NWS</h2>
+            
+            <div class="fly-id-box">
+                <h3>🪰 Adult NWS Fly Appearance:</h3>
+                <ul>
+                    <li><strong>Size:</strong> About the size of a common housefly or slightly larger</li>
+                    <li><strong>Eyes:</strong> Orange/reddish-orange</li>
+                    <li><strong>Body:</strong> Metallic blue or green</li>
+                    <li><strong>Back:</strong> Three dark stripes along their back</li>
+                </ul>
+            </div>
+            
+            <h3>Signs of Infestation in Animals:</h3>
+            <ul>
+                <li>Depression, isolation from herd</li>
+                <li>Head shaking, irritation</li>
+                <li>Biting or licking at wounds</li>
+                <li>Foul odor from wounds</li>
+                <li>Small white eggs or larvae around wounds</li>
+                <li>Drainage or enlargement around nose, ears, umbilicus, or genitalia</li>
+            </ul>
+            
+            <div class="warning-box">
+                <strong>Important:</strong> Only NWS feed on LIVING tissue. Other fly larvae feed on dead tissue. If you see maggots in a wound on a live animal, report it immediately.
+            </div>
+        </section>
+        
+        <!-- PREVENTION -->
+        <section class="info-section">
+            <h2>Prevention &amp; Protection</h2>
+            <ul>
+                <li><strong>Inspect animals regularly</strong> - especially after calving, branding, or any procedure that creates wounds</li>
+                <li><strong>Keep wounds clean and covered</strong> - work with your veterinarian on preventative treatments</li>
+                <li><strong>Monitor body openings</strong> - nose, ears, umbilicus, genitalia</li>
+                <li><strong>When traveling to/from affected areas</strong> - inspect pets and vehicles for NWS flies and larvae</li>
+                <li><strong>Report ALL suspicious cases</strong> - early detection is critical</li>
+            </ul>
+        </section>
+        
+        <!-- OFFICIAL RESOURCES -->
+        <section class="info-section">
+            <h2>Official Resources</h2>
+            <p>Get the latest information from these authoritative sources:</p>
+            
+            <div class="resource-grid">
+                <a href="https://screwwormtx.org/" class="resource-link" target="_blank">
+                    <strong>ScrewwormTX.org</strong>
+                    <span>Screwworm Coalition of Texas - identification, reporting, confirmed cases</span>
+                </a>
+                
+                <a href="https://www.tahc.texas.gov/emergency/nws.html" class="resource-link" target="_blank">
+                    <strong>Texas Animal Health Commission</strong>
+                    <span>Official state response, guidance for producers</span>
+                </a>
+                
+                <a href="https://screwworm.gov" class="resource-link" target="_blank">
+                    <strong>USDA Screwworm.gov</strong>
+                    <span>Federal resources and eradication program information</span>
+                </a>
+                
+                <a href="https://gov.texas.gov/news/post/governor-abbott-issues-disaster-declaration-to-prevent-new-world-screwworm-fly-infestation" class="resource-link" target="_blank">
+                    <strong>Governor's Disaster Declaration</strong>
+                    <span>Full text of January 29, 2026 disaster declaration</span>
+                </a>
+                
+                <a href="https://tpwd.texas.gov/" class="resource-link" target="_blank">
+                    <strong>Texas Parks &amp; Wildlife</strong>
+                    <span>Wildlife-related NWS reports and biologist contacts</span>
+                </a>
+                
+                <a href="https://texasfarmbureau.org/abbott-issues-disaster-declaration-over-screwworm-threat/" class="resource-link" target="_blank">
+                    <strong>Texas Farm Bureau</strong>
+                    <span>Updates and resources for agricultural producers</span>
+                </a>
+            </div>
+        </section>
+        
+        <!-- ABOUT THIS SITE -->
+        <section class="info-section">
+            <h2>About This Site</h2>
+            <p>Diamond Arrow AI Tools provides this NWS tracking resource to support Texas ranchers and livestock producers during this critical time. We aggregate official information from TAHC, USDA, TPWD, and the Screwworm Coalition of Texas to help you stay informed and protect your animals.</p>
+            <p><strong>Contact:</strong> <a href="mailto:info@diamond-arrow.ai">info@diamond-arrow.ai</a></p>
+        </section>
+    </main>
+    
+    <!-- FOOTER -->
+    <footer>
+        <p class="dedication">"Dedicated to the memory of Bob and Joanne Steele, who taught me the value of hard work, education, and innovation."</p>
+        
+        <div class="contact-info">
+            <p><strong>Diamond Arrow AI Tools</strong></p>
+            <p><a href="mailto:info@diamond-arrow.ai">info@diamond-arrow.ai</a></p>
+        </div>
+        
+        <p class="copyright">
+            © 2026 Arrow Diamond AI Tools®. All rights reserved.<br>
+            This site provides aggregated public information for educational purposes only.<br>
+            For official guidance, contact TAHC at 1-800-550-8242.
+        </p>
+    </footer>
+</body>
+</html>
