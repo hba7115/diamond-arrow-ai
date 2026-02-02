@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Screwworm Intelligence Tracker v4.1</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0a0a0a; color: #fff; }
+        
+        #map-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        #map { 
+            width: 100%; 
+            height: 100%; 
+            background: #1a1a2e;
+        }
+        
+        /* Header - Top Left */
+        .header-overlay {
+            position: absolute;
+            top: 10px;
+            left: 60px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+        
+        .header-overlay h1 {
+            font-size: 16px;
+            color: #ff4444;
+            margin-bottom: 2px;
+        }
+        
+        .header-overlay .subtitle {
+            font-size: 10px;
+            color: #888;
+        }
+        
+        /* Alert Box - Top Center */
+        .info-box {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 68, 68, 0.95);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        .info-box a {
+            color: #fff;
+            text-decoration: underline;
+        }
+        
+        /* Stats Panel - Top Right - Compact 2-column */
+        .stats-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            font-size: 10px;
+        }
+        
+        .stats-panel h3 {
+            font-size: 11px;
+            color: #ff4444;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 3px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 12px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        
+        .stat-label { color: #888; }
+        .stat-value { color: #fff; font-weight: bold; text-align: right; }
+        .stat-value.critical { color: #ff4444; }
+        .stat-value.warning { color: #ffcc00; }
+        
+        /* Controls - Horizontal Bottom Bar */
+        .controls-bar {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .control-group-title {
+            font-size: 9px;
+            color: #ff4444;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 2px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+        }
+        
+        .control-row input[type="checkbox"] {
+            margin-right: 4px;
+            width: 12px;
+            height: 12px;
+        }
+        
+        .control-row label {
+            color: #ccc;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            margin: 2px;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .btn.active {
+            background: #ff4444;
+            border-color: #ff4444;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        
+        /* Legend - Bottom Left */
+        .legend-panel {
+            position: absolute;
+            bottom: 70px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            font-size: 9px;
+            max-width: 200px;
+        }
+        
+        .legend-panel h3 {
+            font-size: 10px;
+            color: #fff;
+            margin-bottom: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .legend-content.collapsed { display: none; }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px 8px;
+        }
+        
+        .legend-section {
+            margin-bottom: 6px;
+        }
+        
+        .legend-section h4 {
+            font-size: 8px;
+            color: #888;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 2px 0;
+        }
+        
+        .legend-marker {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .legend-line {
+            width: 14px;
+            height: 3px;
+            margin-right: 5px;
+        }
+        
+        .legend-zone {
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+            border: 1px solid;
+        }
+        
+        /* Migration Info - Right Side below Stats */
+        .migration-info {
+            position: absolute;
+            top: 165px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            font-size: 9px;
+            width: 195px;
+        }
+        
+        .migration-info h3 {
+            font-size: 10px;
+            color: #ff00ff;
+            margin-bottom: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .migration-info.collapsed .migration-content { display: none; }
+        
+        .migration-item {
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #222;
+        }
+        
+        .migration-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .migration-item .name {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .migration-item .color-bar {
+            width: 12px;
+            height: 3px;
+            display: inline-block;
+        }
+        
+        .migration-item .desc {
+            color: #aaa;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+        
+        .migration-item .risk {
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 8px;
+            margin-top: 2px;
+        }
+        
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            border: 1px solid #333;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fullscreen-btn:hover { background: rgba(50,50,50,0.9); }
+        
+        /* Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            background: rgba(0,0,0,0.95);
+            color: #fff;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+        
+        .leaflet-popup-tip { background: rgba(0,0,0,0.95); }
+        
+        .popup-content {
+            font-size: 11px;
+            line-height: 1.4;
+            max-width: 260px;
+        }
+        
+        .popup-content h4 {
+            color: #ff4444;
+            margin-bottom: 6px;
+            font-size: 12px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 3px;
+        }
+        
+        .popup-content .info-row { margin: 3px 0; }
+        .popup-content .label { color: #888; }
+        .popup-content .value { color: #fff; }
+        .popup-content .critical { color: #ff4444; }
+        .popup-content .high { color: #ff7700; }
+        .popup-content .endemic { color: #ff9900; }
+        .popup-content .eradicated { color: #44ff44; }
+        .popup-content .ows { color: #9966ff; }
+        
+        /* Pulse animation */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+        
+        .toggle-btn {
+            background: #333;
+            border: none;
+            color: #888;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+        
+        .toggle-btn:hover { color: #fff; }
+
+        /* Arrow Diamond AI footer overlay */
+        .ad-footer {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.75);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .ad-footer:hover {
+            background: rgba(0,0,0,0.9);
+            border-color: #4488ff;
+        }
+
+        .ad-footer img {
+            height: 18px;
+            width: auto;
+        }
+
+        .ad-footer-text {
+            font-size: 9px;
+            color: #888;
+            letter-spacing: 0.5px;
+        }
+
+        .ad-footer-text span {
+            color: #4488ff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Session gate check -->
+    <script>
+        if (sessionStorage.getItem('nws-map-auth') !== 'true') {
+            window.location.href = 'index.html';
+        }
+    </script>
+    <div id="map-container">
+        <div id="map"></div>
+        
+        <!-- Header - Top Left -->
+        <div class="header-overlay">
+            <h1>🌍 GLOBAL SCREWWORM INTELLIGENCE TRACKER</h1>
+            <div class="subtitle">AD-NWSC-VIZ-001-v4.1 | NWS & OWS | diamond-arrow.ai | January 31, 2026</div>
+        </div>
+        
+        <!-- Alert - Top Center -->
+        <div class="info-box">
+            🚨 CDC HAN JAN 20 | Tamaulipas 197mi from TX | Abbott Declaration Jan 29 | 
+            <a href="https://www.screwworm.gov" target="_blank">Screwworm.gov</a>
+        </div>
+        
+        <!-- Fullscreen -->
+        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+
+        <!-- Arrow Diamond AI Footer -->
+        <a href="https://diamond-arrow.ai" class="ad-footer" target="_blank" title="Arrow Diamond AI Tools">
+            <img src="../Arrow_Diamond_AI_Tools_BLUE_logo_A.png" alt="AD" 
+                 onerror="this.style.display='none'">
+            <div class="ad-footer-text">
+                <span>Arrow Diamond</span> AI Tools® | 
+                <span style="cursor:pointer;color:#ff4444;" onclick="event.preventDefault();sessionStorage.removeItem('nws-map-auth');window.location.href='index.html';">Logout</span>
+            </div>
+        </a>
+        
+        <!-- Stats - Top Right -->
+        <div class="stats-panel">
+            <h3>📊 STATUS (Jan 27, 2026)</h3>
+            <div class="stats-grid">
+                <div class="stat-row">
+                    <span class="stat-label">Animals:</span>
+                    <span class="stat-value critical">149,000+</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Humans:</span>
+                    <span class="stat-value critical">1,200+</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Deaths:</span>
+                    <span class="stat-value critical">7</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">MX Hosp:</span>
+                    <span class="stat-value critical">24</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">MX Active:</span>
+                    <span class="stat-value critical">601</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Tamaulipas:</span>
+                    <span class="stat-value critical">8</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">US Human:</span>
+                    <span class="stat-value warning">1 (travel)</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Closest:</span>
+                    <span class="stat-value critical">197 mi</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">US Risk:</span>
+                    <span class="stat-value critical">$11.1B</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Border:</span>
+                    <span class="stat-value critical">CLOSED</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Migration Info - Right Side -->
+        <div class="migration-info" id="migration-panel">
+            <h3 onclick="toggleMigrationPanel()">
+                ➡️ MIGRATION PATHS
+                <button class="toggle-btn" id="migration-toggle">−</button>
+            </h3>
+            <div class="migration-content">
+                <div class="migration-item">
+                    <div class="name"><span class="color-bar" style="background:#ff00ff;"></span> NAM Wind</div>
+                    <div class="desc">Jun-Sep monsoon winds carry flies 125+ mi into TX. Historical outbreak mechanism.</div>
+                    <div class="risk">⚠️ HIGH: Jun-Sep 2026</div>
+                </div>
+                <div class="migration-item">
+                    <div class="name"><span class="color-bar" style="background:#00ffff;"></span> Darién Gap</div>
+                    <div class="desc">2022 breach. Human/animal migration from South America.</div>
+                </div>
+                <div class="migration-item">
+                    <div class="name"><span class="color-bar" style="background:#ffff00;"></span> Cattle Transport</div>
+                    <div class="desc">Livestock trucks. Chiapas→Nuevo León (Nov '24-Sep '25).</div>
+                </div>
+                <div class="migration-item">
+                    <div class="name"><span class="color-bar" style="background:#ff8800;"></span> Gulf Coast</div>
+                    <div class="desc">Tamaulipas→TX coastal route. 197-mile threat.</div>
+                    <div class="risk">⚠️ ACTIVE THREAT</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend - Bottom Left -->
+        <div class="legend-panel">
+            <h3 onclick="toggleLegend()">
+                🗺️ LEGEND
+                <button class="toggle-btn" id="legend-toggle">−</button>
+            </h3>
+            <div class="legend-content" id="legend-content">
+                <div class="legend-grid">
+                    <div class="legend-section">
+                        <h4>NWS Status</h4>
+                        <div class="legend-item"><div class="legend-marker" style="background:#ff0000;"></div>Critical</div>
+                        <div class="legend-item"><div class="legend-marker" style="background:#ff7700;"></div>High</div>
+                        <div class="legend-item"><div class="legend-marker" style="background:#ff9900;"></div>Endemic</div>
+                        <div class="legend-item"><div class="legend-marker" style="background:#44ff44;"></div>Eradicated</div>
+                    </div>
+                    <div class="legend-section">
+                        <h4>Other</h4>
+                        <div class="legend-item"><div class="legend-marker" style="background:#9966ff;"></div>OWS</div>
+                        <div class="legend-item"><div class="legend-marker" style="background:#0088ff;"></div>SIT</div>
+                        <div class="legend-item"><div class="legend-marker" style="background:#00ff88;"></div>Surv.</div>
+                    </div>
+                </div>
+                <div class="legend-grid" style="margin-top:4px;">
+                    <div class="legend-section">
+                        <h4>Paths</h4>
+                        <div class="legend-item"><div class="legend-line" style="background:#ff00ff;"></div>NAM</div>
+                        <div class="legend-item"><div class="legend-line" style="background:#00ffff;"></div>Darién</div>
+                        <div class="legend-item"><div class="legend-line" style="background:#ffff00;"></div>Cattle</div>
+                        <div class="legend-item"><div class="legend-line" style="background:#ff8800;"></div>Gulf</div>
+                    </div>
+                    <div class="legend-section">
+                        <h4>Zones</h4>
+                        <div class="legend-item"><div class="legend-zone" style="background:rgba(255,0,0,0.2);border-color:#f00;"></div>P1</div>
+                        <div class="legend-item"><div class="legend-zone" style="background:rgba(255,119,0,0.2);border-color:#f70;"></div>P2</div>
+                        <div class="legend-item"><div class="legend-zone" style="background:rgba(255,204,0,0.2);border-color:#fc0;"></div>P3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls - Bottom Bar -->
+        <div class="controls-bar">
+            <!-- Base Map -->
+            <div class="control-group">
+                <div class="control-group-title">Base Map</div>
+                <div class="btn-group">
+                    <button class="btn active" id="btn-street" onclick="setBaseLayer('street')">Street</button>
+                    <button class="btn" id="btn-satellite" onclick="setBaseLayer('satellite')">Sat</button>
+                    <button class="btn" id="btn-terrain" onclick="setBaseLayer('terrain')">Terrain</button>
+                </div>
+            </div>
+            
+            <!-- Markers -->
+            <div class="control-group">
+                <div class="control-group-title">Markers</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px 8px;">
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-nws-active" checked onchange="toggleLayer('nwsActive')">
+                        <label for="layer-nws-active">Active</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-nws-endemic" checked onchange="toggleLayer('nwsEndemic')">
+                        <label for="layer-nws-endemic">Endemic</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-nws-eradicated" checked onchange="toggleLayer('nwsEradicated')">
+                        <label for="layer-nws-eradicated">Historical</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-ows" checked onchange="toggleLayer('ows')">
+                        <label for="layer-ows">OWS</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Infrastructure -->
+            <div class="control-group">
+                <div class="control-group-title">Infra</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px 8px;">
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-facilities" checked onchange="toggleLayer('facilities')">
+                        <label for="layer-facilities">SIT</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-surveillance" checked onchange="toggleLayer('surveillance')">
+                        <label for="layer-surveillance">Surv</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-borders" checked onchange="toggleLayer('borders')">
+                        <label for="layer-borders">Border</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Intel Layers -->
+            <div class="control-group">
+                <div class="control-group-title">Intel</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1px 8px;">
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-trap-zones" checked onchange="toggleLayer('trapZones')">
+                        <label for="layer-trap-zones">Traps</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-migration" checked onchange="toggleLayer('migration')">
+                        <label for="layer-migration">Paths</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-high-risk" checked onchange="toggleLayer('highRisk')">
+                        <label for="layer-high-risk">Counties</label>
+                    </div>
+                    <div class="control-row">
+                        <input type="checkbox" id="layer-wildlife" onchange="toggleLayer('wildlife')">
+                        <label for="layer-wildlife">Wildlife</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Zoom -->
+            <div class="control-group">
+                <div class="control-group-title">Zoom</div>
+                <div class="btn-group">
+                    <button class="btn" onclick="zoomToRegion('americas')" title="Americas">🌎</button>
+                    <button class="btn" onclick="zoomToRegion('africa')" title="Africa">🌍</button>
+                    <button class="btn" onclick="zoomToRegion('asia')" title="Asia">🌏</button>
+                    <button class="btn" onclick="zoomToRegion('usborder')" title="US Border">🇺🇸</button>
+                    <button class="btn" onclick="zoomToRegion('outbreak')" title="Outbreak">🚨</button>
+                    <button class="btn" onclick="zoomToRegion('maryland')" title="MD Case">🏥</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // MAP INIT WITH FINER ZOOM
+        // ============================================
+        const map = L.map('map', {
+            zoomControl: true,
+            attributionControl: true,
+            zoomSnap: 0.25,           // Finer zoom steps
+            zoomDelta: 0.5,           // Half-step per scroll
+            wheelPxPerZoomLevel: 120  // More scroll per zoom
+        }).setView([15, -40], 3);
+        
+        // Base layers
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '© OpenStreetMap'
+        });
+        
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19, attribution: '© Esri'
+        });
+        
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            maxZoom: 17, attribution: '© OpenTopoMap'
+        });
+        
+        streetLayer.addTo(map);
+        let currentBaseLayer = streetLayer;
+        
+        function setBaseLayer(type) {
+            map.removeLayer(currentBaseLayer);
+            document.querySelectorAll('.controls-bar .btn').forEach(btn => {
+                if (btn.id && btn.id.startsWith('btn-')) btn.classList.remove('active');
+            });
+            
+            switch(type) {
+                case 'satellite':
+                    currentBaseLayer = satelliteLayer;
+                    document.getElementById('btn-satellite').classList.add('active');
+                    break;
+                case 'terrain':
+                    currentBaseLayer = terrainLayer;
+                    document.getElementById('btn-terrain').classList.add('active');
+                    break;
+                default:
+                    currentBaseLayer = streetLayer;
+                    document.getElementById('btn-street').classList.add('active');
+            }
+            currentBaseLayer.addTo(map);
+        }
+        
+        // Icon creator
+        function createIcon(color, size = 12, pulse = false) {
+            const style = pulse ? `animation: pulse 2s infinite;` : '';
+            return L.divIcon({
+                className: '',
+                html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);box-shadow:0 0 ${size}px ${color};${style}"></div>`,
+                iconSize: [size, size],
+                iconAnchor: [size/2, size/2]
+            });
+        }
+        
+        // Layer groups
+        const layers = {
+            nwsActive: L.layerGroup(),
+            nwsEndemic: L.layerGroup(),
+            nwsEradicated: L.layerGroup(),
+            ows: L.layerGroup(),
+            facilities: L.layerGroup(),
+            surveillance: L.layerGroup(),
+            borders: L.layerGroup(),
+            trapZones: L.layerGroup(),
+            migration: L.layerGroup(),
+            highRisk: L.layerGroup(),
+            wildlife: L.layerGroup()
+        };
+        
+        // ============================================
+        // DATA
+        // ============================================
+        
+        const nwsActiveData = [
+            { coords: [24.85, -99.57], name: "González, Tamaulipas", date: "Jan 20, 2026", cases: "Active", distance: "200 mi", details: "8 active Tamaulipas cases", source: "CDC HAN" },
+            { coords: [23.72, -99.12], name: "Llera, Tamaulipas", date: "Jan 18, 2026", cases: "Active", distance: "197 mi", details: "Closest to US. Abbott declaration.", source: "SENASICA" },
+            { coords: [26.51, -100.18], name: "Sabinas Hidalgo, NL", date: "Sep 22, 2025", cases: "711", distance: "70 mi", details: "Historical closest.", source: "USDA" },
+            { coords: [25.67, -100.32], name: "Monterrey Area", date: "Oct 2025", cases: "Multiple", distance: "150 mi", details: "Metro detections.", source: "SENASICA" },
+            { coords: [22.5, -100.0], name: "Central Mexico", date: "Dec 2025", cases: "1,145 peak", distance: "280 mi", details: "601 active.", source: "SENASICA" },
+            { coords: [16.75, -93.11], name: "Chiapas", date: "Nov 2024", cases: "First MX", distance: "900 mi", details: "Barrier breach.", source: "USDA" },
+            { coords: [14.63, -90.51], name: "Guatemala", date: "2024", cases: "Widespread", details: "Full spread.", source: "COPEG" },
+            { coords: [14.07, -87.22], name: "Honduras", date: "2024", cases: "Widespread", details: "Re-established.", source: "COPEG" },
+            { coords: [13.69, -89.19], name: "El Salvador", date: "2024-25", cases: "Active", details: "US case source.", source: "CDC" },
+            { coords: [12.14, -86.27], name: "Nicaragua", date: "2023-24", cases: "124+", details: "July 2025 report.", source: "Embassy" },
+            { coords: [9.93, -84.08], name: "Costa Rica", date: "Jul 2023", cases: "1 death", details: "Re-emergence.", source: "AJTMH" },
+            { coords: [8.99, -79.52], name: "Panama Breach", date: "Aug 2022", cases: "6,500+", details: "Origin point.", source: "COPEG" }
+        ];
+        
+        const nwsEndemicData = [
+            { coords: [-14.24, -51.93], name: "Brazil", status: "ENDEMIC", economic: "$3.6B/yr" },
+            { coords: [-31.42, -64.18], name: "Argentina", status: "ENDEMIC", economic: "Cattle" },
+            { coords: [4.57, -74.30], name: "Colombia", status: "ENDEMIC", economic: "Major" },
+            { coords: [6.42, -66.59], name: "Venezuela", status: "ENDEMIC", economic: "Limited data" },
+            { coords: [-1.83, -78.18], name: "Ecuador", status: "ENDEMIC", economic: "Ag impact" },
+            { coords: [-9.19, -75.02], name: "Peru", status: "ENDEMIC", economic: "Travelers" },
+            { coords: [-16.29, -63.59], name: "Bolivia", status: "ENDEMIC", economic: "Lowlands" },
+            { coords: [-23.44, -58.44], name: "Paraguay", status: "ENDEMIC", economic: "Exporter" },
+            { coords: [-32.52, -55.77], name: "Uruguay", status: "ENDEMIC", economic: "North" },
+            { coords: [4.86, -58.93], name: "Guyana Region", status: "ENDEMIC", economic: "Wildlife" },
+            { coords: [21.52, -77.78], name: "Cuba", status: "ENDEMIC", economic: "Island" },
+            { coords: [18.97, -70.16], name: "Dominican Rep", status: "ENDEMIC", economic: "Tourism" },
+            { coords: [18.97, -72.29], name: "Haiti", status: "ENDEMIC", economic: "Limited" },
+            { coords: [18.11, -77.29], name: "Jamaica", status: "ENDEMIC", economic: "$3M+/yr" },
+            { coords: [10.69, -61.22], name: "Trinidad", status: "ENDEMIC", economic: "Islands" }
+        ];
+        
+        const nwsEradicatedData = [
+            { coords: [32.78, -96.80], name: "US Continental", year: "1966", status: "ERADICATED", details: "SIT success" },
+            { coords: [24.55, -81.78], name: "Florida Keys", year: "2016-17", status: "ERADICATED", details: "135 deer" },
+            { coords: [32.67, -115.47], name: "Mexico (Hist)", year: "1991", status: "REINFESTED", details: "2024" },
+            { coords: [32.90, 13.19], name: "Libya", year: "1988-91", status: "ERADICATED", details: "FAO $35M" },
+            { coords: [9.15, -79.35], name: "Panama Barrier", year: "1994-2022", status: "BREACHED", details: "28 yrs" }
+        ];
+        
+        const owsData = [
+            { coords: [9.08, 8.68], name: "Nigeria", region: "W Africa" },
+            { coords: [-1.29, 36.82], name: "Kenya", region: "E Africa" },
+            { coords: [-6.37, 34.89], name: "Tanzania", region: "E Africa" },
+            { coords: [0.31, 32.58], name: "Uganda", region: "E Africa" },
+            { coords: [-13.13, 27.85], name: "Zambia", region: "S Africa" },
+            { coords: [-18.67, 35.53], name: "Zimbabwe", region: "S Africa" },
+            { coords: [33.22, 43.68], name: "Iraq", region: "Mid East" },
+            { coords: [23.42, 53.85], name: "UAE", region: "Gulf" },
+            { coords: [23.61, 58.59], name: "Oman", region: "Gulf" },
+            { coords: [24.77, 46.74], name: "Saudi Arabia", region: "Mid East" },
+            { coords: [20.59, 78.96], name: "India", region: "S Asia" },
+            { coords: [4.21, 101.98], name: "Malaysia", region: "SE Asia" },
+            { coords: [-0.79, 113.92], name: "Indonesia", region: "SE Asia" },
+            { coords: [12.88, 121.77], name: "Philippines", region: "SE Asia" },
+            { coords: [-6.09, 145.39], name: "PNG", region: "Oceania" }
+        ];
+        
+        const facilitiesData = [
+            { coords: [26.30, -98.16], name: "Moore AFB, TX", type: "DISPERSAL", status: "Early 2026", capacity: "100M/wk" },
+            { coords: [22.25, -97.85], name: "Tampico, MX", type: "DISPERSAL", status: "Nov 2025", capacity: "NE MX" },
+            { coords: [15.00, -92.18], name: "Metapa, Chiapas", type: "PRODUCTION", status: "Sum 2026", capacity: "60-100M" },
+            { coords: [9.08, -79.38], name: "COPEG, Panama", type: "PRODUCTION", status: "Active", capacity: "100M/wk" },
+            { coords: [26.35, -98.20], name: "Edinburg Plan", type: "PRODUCTION", status: "2029", capacity: "300M/wk" },
+            { coords: [30.04, -99.14], name: "Kerrville TX", type: "RESEARCH", status: "Since 1946", capacity: "HQ" }
+        ];
+        
+        const surveillanceData = [
+            { coords: [39.05, -77.00], name: "Maryland Zone", type: "HUMAN", date: "Aug 2025", radius: 32186, details: "20-mi. All negative.", status: "Complete" },
+            { coords: [26.20, -98.20], name: "RGV Surveillance", type: "BORDER", date: "Ongoing", radius: 80000, details: "113+ traps", status: "Active" }
+        ];
+        
+        const trapZoneData = [
+            { center: [26.20, -98.23], radius: 40000, name: "McAllen", priority: 1, traps: 25 },
+            { center: [26.52, -99.49], radius: 35000, name: "Laredo", priority: 1, traps: 20 },
+            { center: [25.90, -97.50], radius: 30000, name: "Brownsville", priority: 1, traps: 18 },
+            { center: [29.37, -100.90], radius: 30000, name: "Del Rio", priority: 1, traps: 15 },
+            { center: [26.87, -99.00], radius: 25000, name: "Zapata", priority: 2, traps: 12 },
+            { center: [28.71, -100.49], radius: 25000, name: "Eagle Pass", priority: 2, traps: 12 },
+            { center: [31.76, -106.49], radius: 30000, name: "El Paso", priority: 2, traps: 10 },
+            { center: [29.56, -103.09], radius: 20000, name: "Big Bend", priority: 3, traps: 8 },
+            { center: [27.75, -99.50], radius: 20000, name: "Webb Int", priority: 3, traps: 6 },
+            { center: [30.31, -104.02], radius: 20000, name: "Presidio", priority: 3, traps: 5 }
+        ];
+        
+        const migrationPaths = [
+            { name: "NAM Wind", color: "#ff00ff", dash: "10,10", risk: "HIGH Jun-Sep", coords: [[18,-96],[21,-98],[24,-99.5],[27,-99],[30,-97],[33,-96]] },
+            { name: "Darién Gap", color: "#00ffff", dash: "5,10", risk: "2022 Breach", coords: [[7.5,-77.5],[8.5,-78.5],[9,-79.5],[10,-83],[12,-86],[14,-88],[16,-92]] },
+            { name: "Cattle", color: "#ffff00", dash: "15,5", risk: "Confirmed", coords: [[16.75,-93],[19,-96],[22,-99],[24,-100],[26.5,-100.2]] },
+            { name: "Gulf Coast", color: "#ff8800", dash: "8,8", risk: "ACTIVE", coords: [[22,-97.8],[23.5,-98.5],[24,-98],[25.5,-97.5],[26.5,-97],[27.5,-97.2]] }
+        ];
+        
+        const highRiskCounties = [
+            { name: "Cameron", bounds: [[25.85,-97.85],[26.45,-97.15]] },
+            { name: "Hidalgo", bounds: [[26.10,-98.60],[26.70,-97.90]] },
+            { name: "Starr", bounds: [[26.35,-99.05],[26.75,-98.45]] },
+            { name: "Zapata", bounds: [[26.60,-99.45],[27.20,-98.85]] },
+            { name: "Webb", bounds: [[27.25,-99.90],[28.25,-98.90]] },
+            { name: "Maverick", bounds: [[28.35,-100.75],[29.15,-99.95]] },
+            { name: "Kinney", bounds: [[29.05,-100.75],[29.65,-100.05]] },
+            { name: "Val Verde", bounds: [[29.40,-101.80],[30.40,-100.50]] },
+            { name: "Terrell", bounds: [[29.75,-103.00],[30.75,-102.00]] },
+            { name: "Brewster", bounds: [[29.20,-104.20],[30.40,-103.00]] },
+            { name: "Presidio", bounds: [[29.50,-104.90],[30.50,-103.80]] },
+            { name: "Hudspeth", bounds: [[30.75,-106.00],[31.75,-104.70]] },
+            { name: "El Paso", bounds: [[31.50,-106.70],[32.10,-106.10]] }
+        ];
+        
+        const wildlifeCorridors = [
+            { name: "Rio Grande Valley", coords: [[26,-97.5],[26.5,-98.5],[27,-99],[27.5,-99.2],[28,-99.5],[28.5,-100],[29,-100.3],[29.5,-100.8]] },
+            { name: "Trans-Pecos", coords: [[29.5,-103],[30,-103.5],[30.5,-104],[31,-104.5],[31.5,-105]] },
+            { name: "Coastal Bend", coords: [[26,-97.2],[26.5,-97],[27,-97.3],[27.5,-97.5],[28,-97]] }
+        ];
+        
+        // ============================================
+        // BUILD LAYERS
+        // ============================================
+        
+        // NWS Active
+        nwsActiveData.forEach((item, i) => {
+            const pulse = i < 3;
+            const m = L.marker(item.coords, { icon: createIcon('#ff0000', pulse ? 14 : 12, pulse) });
+            m.bindPopup(`<div class="popup-content"><h4>🚨 ${item.name}</h4>
+                <div class="info-row"><span class="label">Date:</span> <span class="value">${item.date}</span></div>
+                <div class="info-row"><span class="label">Cases:</span> <span class="value critical">${item.cases}</span></div>
+                ${item.distance ? `<div class="info-row"><span class="label">Distance:</span> <span class="value critical">${item.distance}</span></div>` : ''}
+                <div class="info-row">${item.details}</div></div>`);
+            layers.nwsActive.addLayer(m);
+        });
+        
+        // NWS Endemic
+        nwsEndemicData.forEach(item => {
+            const m = L.marker(item.coords, { icon: createIcon('#ff9900', 10) });
+            m.bindPopup(`<div class="popup-content"><h4>🦟 ${item.name}</h4>
+                <div class="info-row"><span class="endemic">${item.status}</span> - ${item.economic}</div></div>`);
+            layers.nwsEndemic.addLayer(m);
+        });
+        
+        // NWS Eradicated
+        nwsEradicatedData.forEach(item => {
+            const color = item.status === 'ERADICATED' ? '#44ff44' : '#ff7700';
+            const m = L.marker(item.coords, { icon: createIcon(color, 12) });
+            m.bindPopup(`<div class="popup-content"><h4>📍 ${item.name}</h4>
+                <div class="info-row">${item.year} - <span class="${item.status === 'ERADICATED' ? 'eradicated' : 'high'}">${item.status}</span></div>
+                <div class="info-row">${item.details}</div></div>`);
+            layers.nwsEradicated.addLayer(m);
+        });
+        
+        // OWS
+        owsData.forEach(item => {
+            const m = L.marker(item.coords, { icon: createIcon('#9966ff', 10) });
+            m.bindPopup(`<div class="popup-content"><h4>🪰 ${item.name}</h4><div class="ows">${item.region} - C. bezziana</div></div>`);
+            layers.ows.addLayer(m);
+        });
+        
+        // Facilities
+        facilitiesData.forEach(item => {
+            const color = item.type === 'RESEARCH' ? '#00cccc' : '#0088ff';
+            const m = L.marker(item.coords, { icon: createIcon(color, 12) });
+            m.bindPopup(`<div class="popup-content"><h4>🏭 ${item.name}</h4>
+                <div class="info-row">${item.type} - ${item.status}</div>
+                <div class="info-row">Capacity: ${item.capacity}</div></div>`);
+            layers.facilities.addLayer(m);
+        });
+        
+        // Surveillance
+        surveillanceData.forEach(item => {
+            const c = L.circle(item.coords, { radius: item.radius, color: '#00ff88', fillColor: '#00ff88', fillOpacity: 0.1, weight: 2, dashArray: '5,5' });
+            c.bindPopup(`<div class="popup-content"><h4>🔍 ${item.name}</h4><div>${item.type} - ${item.status}</div><div>${item.details}</div></div>`);
+            layers.surveillance.addLayer(c);
+            layers.surveillance.addLayer(L.marker(item.coords, { icon: createIcon('#00ff88', 8) }));
+        });
+        
+        // Border
+        const borderCoords = [[32.53,-117.12],[32.48,-116.94],[32.67,-115.40],[31.78,-111.05],[31.33,-109.54],[31.75,-106.44],[29.56,-104.41],[29.36,-103.04],[29.03,-100.92],[28.71,-100.50],[27.50,-99.51],[26.53,-99.10],[26.20,-98.23],[26.08,-97.82],[25.95,-97.15]];
+        const borderLine = L.polyline(borderCoords, { color: '#ff4444', weight: 3, opacity: 0.8, dashArray: '10,5' });
+        borderLine.bindPopup(`<div class="popup-content"><h4>🇺🇸🇲🇽 Border</h4><div>1,954 mi | Closest: <span class="critical">197 mi</span> | <span class="critical">CLOSED</span></div></div>`);
+        layers.borders.addLayer(borderLine);
+        
+        // Trap Zones
+        trapZoneData.forEach(z => {
+            const colors = { 1: '#ff0000', 2: '#ff7700', 3: '#ffcc00' };
+            const c = L.circle(z.center, { radius: z.radius, color: colors[z.priority], fillColor: colors[z.priority], fillOpacity: 0.15, weight: 2 });
+            c.bindPopup(`<div class="popup-content"><h4>🪤 ${z.name}</h4><div>P${z.priority} - ${z.traps} traps</div></div>`);
+            layers.trapZones.addLayer(c);
+        });
+        
+        // Migration
+        migrationPaths.forEach(p => {
+            const line = L.polyline(p.coords, { color: p.color, weight: 4, opacity: 0.8, dashArray: p.dash });
+            line.bindPopup(`<div class="popup-content"><h4>➡️ ${p.name}</h4><div class="critical">${p.risk}</div></div>`);
+            layers.migration.addLayer(line);
+            const mid = Math.floor(p.coords.length / 2);
+            layers.migration.addLayer(L.marker(p.coords[mid], { icon: L.divIcon({ html: `<div style="color:${p.color};font-size:14px;text-shadow:0 0 3px #000;">➤</div>`, iconSize: [16,16] }) }));
+        });
+        
+        // High-Risk Counties
+        highRiskCounties.forEach(c => {
+            const r = L.rectangle(c.bounds, { color: '#ff4444', fillColor: '#ff4444', fillOpacity: 0.1, weight: 1 });
+            r.bindPopup(`<div class="popup-content"><h4>⚠️ ${c.name} Co.</h4><div class="critical">HIGH RISK</div></div>`);
+            layers.highRisk.addLayer(r);
+        });
+        
+        // Wildlife
+        wildlifeCorridors.forEach(c => {
+            const line = L.polyline(c.coords, { color: '#00ff88', weight: 8, opacity: 0.3, lineCap: 'round' });
+            line.bindPopup(`<div class="popup-content"><h4>🦌 ${c.name}</h4><div>Wildlife corridor - 2.9M feral hogs</div></div>`);
+            layers.wildlife.addLayer(line);
+        });
+        
+        // Add default layers
+        Object.keys(layers).forEach(k => { if (k !== 'wildlife') layers[k].addTo(map); });
+        
+        // ============================================
+        // FUNCTIONS
+        // ============================================
+        
+        function toggleLayer(name) {
+            const idMap = {
+                'nwsActive': 'layer-nws-active', 'nwsEndemic': 'layer-nws-endemic',
+                'nwsEradicated': 'layer-nws-eradicated', 'ows': 'layer-ows',
+                'facilities': 'layer-facilities', 'surveillance': 'layer-surveillance',
+                'borders': 'layer-borders', 'trapZones': 'layer-trap-zones',
+                'migration': 'layer-migration', 'highRisk': 'layer-high-risk',
+                'wildlife': 'layer-wildlife'
+            };
+            const cb = document.getElementById(idMap[name]);
+            if (cb && cb.checked) map.addLayer(layers[name]);
+            else map.removeLayer(layers[name]);
+        }
+        
+        function zoomToRegion(region) {
+            const v = { americas: [5,-70,3], africa: [5,20,4], asia: [15,100,4], usborder: [28,-100,6], outbreak: [20,-98,5], maryland: [39.05,-77,8] };
+            map.setView([v[region][0], v[region][1]], v[region][2]);
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else document.exitFullscreen();
+        }
+        
+        function toggleLegend() {
+            const c = document.getElementById('legend-content');
+            const b = document.getElementById('legend-toggle');
+            c.classList.toggle('collapsed');
+            b.textContent = c.classList.contains('collapsed') ? '+' : '−';
+        }
+        
+        function toggleMigrationPanel() {
+            const p = document.getElementById('migration-panel');
+            const b = document.getElementById('migration-toggle');
+            p.classList.toggle('collapsed');
+            b.textContent = p.classList.contains('collapsed') ? '+' : '−';
+        }
+        
+        L.control.scale({ imperial: true, metric: true }).addTo(map);
+        console.log('NWS Tracker v4.1 - Finer zoom, compact controls, migration info');
+    </script>
+</body>
+</html>
