@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow Diamond AI — NWS Map Access</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 40px 36px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 100, 255, 0.08);
+        }
+
+        /* ---- Logo area ---- */
+        .logo-area {
+            margin-bottom: 24px;
+        }
+
+        .logo-area img {
+            max-width: 160px;
+            height: auto;
+            margin-bottom: 8px;
+        }
+
+        .logo-text {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ---- Heading ---- */
+        h1 {
+            font-size: 20px;
+            color: #ff4444;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 28px;
+        }
+
+        /* ---- Form ---- */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: #4488ff;
+            box-shadow: 0 0 0 2px rgba(68, 136, 255, 0.15);
+        }
+
+        .form-group input::placeholder {
+            color: #555;
+        }
+
+        /* ---- Button ---- */
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1a3a6e, #2255aa);
+            border: 1px solid #3366bb;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #2255aa, #3377cc);
+            border-color: #4488dd;
+            box-shadow: 0 0 12px rgba(68, 136, 255, 0.25);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ---- Error message ---- */
+        .error-msg {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .error-msg.visible {
+            display: block;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        /* ---- Info box ---- */
+        .info-box {
+            margin-top: 24px;
+            padding: 12px;
+            background: rgba(255, 68, 68, 0.08);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .info-box strong {
+            color: #ff4444;
+        }
+
+        /* ---- Back link ---- */
+        .back-link {
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .back-link a {
+            color: #4488ff;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* ---- Footer ---- */
+        .gate-footer {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Logo -->
+        <div class="logo-area">
+            <img src="../Arrow_Diamond_AI_Tools_BLUE_logo_A.png" alt="Arrow Diamond AI Tools" 
+                 onerror="this.style.display='none'">
+            <div class="logo-text">Arrow Diamond AI Tools</div>
+        </div>
+
+        <!-- Heading -->
+        <h1>🗺️ NWS Intelligence Map</h1>
+        <p class="subtitle">Team access — Beta testing</p>
+
+        <!-- Login Form -->
+        <form id="auth-form" onsubmit="return handleLogin(event)">
+            <div class="form-group">
+                <label for="password">Access Code</label>
+                <input type="password" id="password" placeholder="Enter access code" autofocus autocomplete="off">
+            </div>
+            <button type="submit" class="submit-btn">Enter Map</button>
+            <div class="error-msg" id="error-msg">Incorrect access code. Please try again.</div>
+        </form>
+
+        <!-- Info -->
+        <div class="info-box">
+            <strong>NWS Global Screwworm Intelligence Tracker v4.1</strong><br>
+            Interactive map with outbreak locations, migration paths, surveillance zones, and trap data. 
+            Currently in beta testing for the team.
+        </div>
+
+        <!-- Back link -->
+        <div class="back-link">
+            <a href="../">← Back to diamond-arrow.ai</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="gate-footer">
+            © 2026 Arrow Diamond AI Tools®. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // PASSWORD VERIFICATION
+        // SHA-256 hash of the access code
+        // This is NOT server-side security — it's a
+        // simple gate to keep casual visitors out.
+        // ============================================
+        const HASH = 'e98a013e5e2e395dd22466ad9df20edb9bf96949872e214dfa8c555fe93666d4';
+
+        async function sha256(message) {
+            // Encode the string as UTF-8 bytes
+            const msgBuffer = new TextEncoder().encode(message);
+            // Hash with SHA-256
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            // Convert ArrayBuffer to hex string
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const input = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-msg');
+
+            if (!input) {
+                errorEl.classList.add('visible');
+                errorEl.textContent = 'Please enter an access code.';
+                return false;
+            }
+
+            // Hash the input and compare
+            const inputHash = await sha256(input);
+
+            if (inputHash === HASH) {
+                // Success — store session flag and redirect
+                sessionStorage.setItem('nws-map-auth', 'true');
+                window.location.href = 'tracker.html';
+            } else {
+                // Failed
+                errorEl.classList.remove('visible');
+                // Force reflow for animation restart
+                void errorEl.offsetWidth;
+                errorEl.classList.add('visible');
+                errorEl.textContent = 'Incorrect access code. Please try again.';
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+
+            return false;
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('password').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin(e);
+            }
+        });
+    </script>
+</body>
+</html>
